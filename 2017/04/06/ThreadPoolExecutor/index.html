@@ -1,0 +1,950 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="前言JAVA通过多线程的方式实现并发，为了方便线程池的管理，JAVA采用线程池的方式对线线程的整个生命周期进行管理。1.5后引入的Executor框架的最大优点是把任务的提交和执行解耦。 要执行任务的人只需把Task描述清楚，然后提交即可。这个Task是怎么被执行的，被谁执行的，什么时候执行的，提交的人就不用关心了。 具体点讲，提交一个Callable对象给ExecutorService（如最常用">
+<meta name="keywords">
+<meta property="og:type" content="article">
+<meta property="og:title" content="程池任务执行全过程">
+<meta property="og:url" content="http://lipy.tech/2017/04/06/ThreadPoolExecutor/index.html">
+<meta property="og:site_name" content="Lipy's Notes">
+<meta property="og:description" content="前言JAVA通过多线程的方式实现并发，为了方便线程池的管理，JAVA采用线程池的方式对线线程的整个生命周期进行管理。1.5后引入的Executor框架的最大优点是把任务的提交和执行解耦。 要执行任务的人只需把Task描述清楚，然后提交即可。这个Task是怎么被执行的，被谁执行的，什么时候执行的，提交的人就不用关心了。 具体点讲，提交一个Callable对象给ExecutorService（如最常用">
+<meta property="og:image" content="http://ongeesmn7.bkt.clouddn.com/execute.png">
+<meta property="og:updated_time" content="2017-04-07T09:24:59.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="程池任务执行全过程">
+<meta name="twitter:description" content="前言JAVA通过多线程的方式实现并发，为了方便线程池的管理，JAVA采用线程池的方式对线线程的整个生命周期进行管理。1.5后引入的Executor框架的最大优点是把任务的提交和执行解耦。 要执行任务的人只需把Task描述清楚，然后提交即可。这个Task是怎么被执行的，被谁执行的，什么时候执行的，提交的人就不用关心了。 具体点讲，提交一个Callable对象给ExecutorService（如最常用">
+<meta name="twitter:image" content="http://ongeesmn7.bkt.clouddn.com/execute.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://lipy.tech/2017/04/06/ThreadPoolExecutor/"/>
+
+
+
+
+
+  <title> 程池任务执行全过程 | Lipy's Notes </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Lipy's Notes</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">弃我去者，昨日之日不可留 <br> 乱我心者，今日之日多烦忧</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://lipy.tech/2017/04/06/ThreadPoolExecutor/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Lipy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Lipy's Notes">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                程池任务执行全过程
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-04-06T13:58:11+08:00">
+                2017-04-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>JAVA通过多线程的方式实现并发，为了方便线程池的管理，JAVA采用线程池的方式对线线程的整个生命周期进行管理。1.5后引入的Executor框架的最大优点是把任务的提交和执行解耦。</p>
+<p>要执行任务的人只需把Task描述清楚，然后提交即可。这个Task是怎么被执行的，被谁执行的，什么时候执行的，提交的人就不用关心了。</p>
+<p>具体点讲，提交一个Callable对象给ExecutorService（如最常用的线程池ThreadPoolExecutor），将得到一个Future对象，调用Future对象的get方法等待执行结果就好了。</p>
+<p> <strong>一个简单的例子</strong></p>
+<pre><code>// 一个有5个作业线程的线程池，
+//老大的老大找到一个管5个人的小团队的老大
+   ExecutorService executorService = Executors.newFixedThreadPool(5);
+     //提交作业给老大，作业内容封装在Callable中，约定好了输出的类型是String。
+        String outputs = executorService.submit(
+                 new Callable&lt;String&gt;() {
+                     public String call() throws Exception {
+                          return &quot;I am a task&quot;;
+                     }
+                     //提交后就等着结果吧，到底是手下5个作业中谁领到任务了，老大是不关心的。
+                 }).get();
+
+        System.out.println(outputs);
+</code></pre><p>使用上非常简单，通过一个工场类Executors创建了一个工作类，工场类返回一个<strong>ExecutorService</strong>对象。</p>
+<a id="more"></a>
+<h3 id="执行过程"><a href="#执行过程" class="headerlink" title="执行过程"></a>执行过程</h3><blockquote>
+<p><strong>任务提交</strong></p>
+</blockquote>
+<p>ExecutorService是一个接口，没有具体实现，最后的具体实现应该由ThreadPoolExecutor实现的。</p>
+<p><strong>Executor</strong> 定义了一个execute接口，ExecutorService继承了Executor，并定义了管理线程生命周期的接口，可以接受提交任务、执行任务、关闭服务。</p>
+<p>抽象类<strong>AbstractExecutorService</strong> 实现了ExecutorService接口，也实现了接口定义的默认行为;ThreadPoolExecutor继承了AbstractExecutorService。</p>
+<p>AbstractExecutorService任务提交的<strong>submit</strong>方法有三个实现。</p>
+<ol>
+<li><p>接收一个Runnable的Task，没有执行结果；</p>
+<pre><code>public Future&lt;?&gt; submit(Runnable task) {
+    if (task == null) throw new NullPointerException();
+       RunnableFuture&lt;Void&gt; ftask = newTaskFor(task, null);
+    execute(ftask);
+    return ftask;
+}
+</code></pre></li>
+<li><p>接收两个参数：一个任务，一个执行结果；</p>
+<pre><code>  public &lt;T&gt; Future&lt;T&gt; submit(Runnable task, T result) {
+    if (task == null) throw new NullPointerException();
+    RunnableFuture&lt;T&gt; ftask = newTaskFor(task, result);
+    execute(ftask);
+    return ftask;
+}
+</code></pre></li>
+<li><p>接收一个Callable，本身就包含执任务内容和执行结果。</p>
+<pre><code>  public &lt;T&gt; Future&lt;T&gt; submit(Callable&lt;T&gt; task) {
+    if (task == null) throw new NullPointerException();
+    RunnableFuture&lt;T&gt; ftask = newTaskFor(task);
+    execute(ftask);
+    return ftask;
+}
+</code></pre></li>
+</ol>
+<p>submit方法的返回结果是Future类型，调用该接口定义的get方法即可获得执行结果。 <strong>V get()</strong> 方法的返回值类型V是在提交任务时就约定好了的。</p>
+<h5 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h5><p>1) 看AbstractExecutorService中submit(Callable<t> task)，构造好一个FutureTask对象后，调用execute()方法执行任务。</t></p>
+<pre><code>public &lt;T&gt; Future&lt;T&gt; submit(Callable&lt;T&gt; task) {
+        if (task == null) throw new NullPointerException();
+        RunnableFuture&lt;T&gt; ftask = newTaskFor(task);
+        execute(ftask);
+        return ftask;
+    }
+</code></pre><p>2) Submit传入的参数都被封装成了FutureTask类型来execute的，对应前面三个不同的参数类型都会封装成FutureTask。</p>
+<pre><code> protected &lt;T&gt; RunnableFuture&lt;T&gt; newTaskFor(Callable&lt;T&gt; callable) {
+    return new FutureTask&lt;T&gt;(callable);
+}
+</code></pre><p>3) Executor接口中定义的<strong>void execute(Runnable command)</strong>方法的作用就是执行提交的任务，该方法在抽象类AbstractExecutorService的子类ThreadPoolExecutor中实现。</p>
+<p>一个任务的执行过程</p>
+<p><img src="http://ongeesmn7.bkt.clouddn.com/execute.png" alt="execute"></p>
+<p>先补充下ThreadPoolExecutor有两个最重要的集合属性，分别是存储接收任务的任务队列和用来干活的作业集合。</p>
+<pre><code>//任务队列
+private final BlockingQueue&lt;Runnable&gt; workQueue;
+//作业线程集合
+private final HashSet&lt;Worker&gt; workers = new HashSet&lt;Worker&gt;();
+</code></pre><p>execute源码分析</p>
+<pre><code>public void execute(Runnable command) {
+    if (command == null)
+        throw new NullPointerException();
+    /*
+     * Proceed in 3 steps:
+     *
+     * 1. 如果当前正在执行的Worker数量比corePoolSize(核心线程大小)要小。
+     * 直接创建一个新的Worker执行任务，会调用addWorker方法
+     *
+     * 2. 如果当前正在执行的Worker数量大于等于corePoolSize(核心线程大小)。
+     * 将任务放到阻塞队列里，如果阻塞队列没满并且状态是RUNNING的话，直接丢到阻塞队列，否则执行第3步。
+     * 丢到阻塞队列之后，还需要再做一次验证(丢到阻塞队列之后可能另外一个线程关闭了线程池或者刚刚加入到队列的线程死了)。
+     * 如果这个时候线程池不在RUNNING状态，把刚刚丢入队列的任务remove掉，调用reject方法，
+     * 否则查看Worker数量，如果Worker数量为0，起一个新的Worker去阻塞队列里拿任务执行
+     *
+     * 3. 丢到阻塞失败的话，会调用addWorker方法尝试起一个新的Worker去阻塞队列拿任务并执行任务，
+     * 如果这个新的Worker创建失败，调用reject方法
+     */
+    int c = ctl.get();
+
+    // 第一个步骤，满足线程池中的线程大小比核心线程大小要小
+    if (workerCountOf(c) &lt; corePoolSize) {
+
+        // addWorker方法第二个参数true表示使用基本大小
+        if (addWorker(command, true))
+            return;
+        c = ctl.get();
+    }
+
+    // 第二个步骤，线程池的线程大小比核心线程大小要大，
+    // 并且线程池还在RUNNING状态，阻塞队列也没满的情况，加阻塞队列里
+    if (isRunning(c) &amp;&amp; workQueue.offer(command)) {
+        int recheck = ctl.get();
+
+    // 虽然满足了第二个步骤，但是这个时候可能突然线程池关闭了，所以再做一层判断
+        if (! isRunning(recheck) &amp;&amp; remove(command))
+            reject(command);
+        else if (workerCountOf(recheck) == 0)
+            addWorker(null, false);
+    }
+
+    // 第三个步骤，直接使用线程池最大大小。addWorker方法第二个参数false表示使用最大大小
+    else if (!addWorker(command, false))
+        reject(command);
+}
+</code></pre><p>在前面方法中都会调用<strong>addWorker(Runnable firstTask, boolean core)</strong>方法创建一个工作线程，差别是创建的有些工作线程上面关联接收到的任务firstTask，有些没有。该方法为当前接收到的任务firstTask创建Worker，并将Worker添加到作业集合HashSet<worker> workers中，并启动作业。</worker></p>
+<p>addWorker源码分析</p>
+<pre><code>// 返回值是boolean类型，true表示新任务被接收了，并且执行了。否则是false
+
+private boolean addWorker(Runnable firstTask, boolean core) {
+    retry:
+    for (;;) {
+        int c = ctl.get();
+        int rs = runStateOf(c); // 线程池当前状态
+
+        // 这个判断转换成 rs &gt;= SHUTDOWN &amp;&amp; (rs != SHUTDOWN || firstTask != null || workQueue.isEmpty)。 
+        // 概括为3个条件：
+        // 1. 线程池不在RUNNING状态并且状态是STOP、TIDYING或TERMINATED中的任意一种状态
+
+        // 2. 线程池不在RUNNING状态，线程池接受了新的任务 
+
+        // 3. 线程池不在RUNNING状态，阻塞队列为空。  满足这3个条件中的任意一个的话，拒绝执行任务
+
+        if (rs &gt;= SHUTDOWN &amp;&amp;
+            ! (rs == SHUTDOWN &amp;&amp;
+                   firstTask == null &amp;&amp;
+                   ! workQueue.isEmpty()))
+            return false;
+
+        for (;;) {
+            int wc = workerCountOf(c); // 线程池线程个数
+            if (wc &gt;= CAPACITY ||
+                wc &gt;= (core ? corePoolSize : maximumPoolSize)) // 如果线程池线程数量超过线程池最大容量或者线程数量超过了基本大小(core参数为true，core参数为false的话判断超过最大大小)
+                return false; // 超过直接返回false
+            if (compareAndIncrementWorkerCount(c)) // 没有超过各种大小的话，cas操作线程池线程数量+1，cas成功的话跳出循环
+                break retry;
+            c = ctl.get();  // 重新检查状态
+            if (runStateOf(c) != rs) // 如果状态改变了，重新循环操作
+            continue retry;
+            // else CAS failed due to workerCount change; retry inner loop
+        }
+    }
+
+    // 参数 firstTask != null, core = true
+    // 验证可以满足可新增线程的条件
+    boolean workerStarted = false; // 任务是否成功启动标识
+    boolean workerAdded = false; // 任务是否添加成功标识
+    Worker w = null;
+    try {
+        final ReentrantLock mainLock = this.mainLock; // 得到线程池的可重入锁
+        w = new Worker(firstTask); // 基于任务firstTask构造worker
+        final Thread t = w.thread; 
+        if (t != null) { 
+            mainLock.lock(); // 锁住，防止并发
+            try {
+                // 在锁住之后再重新检测一下状态
+                int c = ctl.get();
+                int rs = runStateOf(c);
+
+                if (rs &lt; SHUTDOWN ||
+                    (rs == SHUTDOWN &amp;&amp; firstTask == null)) { // 如果线程池在RUNNING状态或者线程池在SHUTDOWN状态并且任务是个null
+                    if (t.isAlive()) 
+                        throw new IllegalThreadStateException(); 
+                        workers.add(w); 
+                    int s = workers.size(); 
+                    if (s &gt; largestPoolSize) 
+                        largestPoolSize = s;
+                    workerAdded = true; // 标识一下任务已经添加成功
+                }
+            } finally {
+                mainLock.unlock(); // 解锁
+            }
+            if (workerAdded) { 
+                t.start(); // 线程启动，调用worker.run
+                workerStarted = true;
+            }
+        }
+    } finally {
+        if (! workerStarted) // 任务启动失败
+            addWorkerFailed(w);
+    }
+    return workerStarted;
+}
+</code></pre><blockquote>
+<p><strong>任务执行</strong></p>
+</blockquote>
+<pre><code>private boolean addWorker(Runnable firstTask, boolean core) {
+            ...
+            ...
+
+            if (workerAdded) { 
+                t.start(); // 线程启动，调用worker.run
+                workerStarted = true;
+            }
+               ...
+    return workerStarted;
+}
+</code></pre><p>Worker中的线程start的时候，调用Worker本身run方法</p>
+<p>run()内部调用runWorker(Worker w),就是在一直调用getTask()方法获取任务，然后调用 runTask(task)方法执行任务。</p>
+<pre><code> final void runWorker(Worker w) {
+    Thread wt = Thread.currentThread();
+    Runnable task = w.firstTask;
+       ...
+    ...
+        //循环从线程池的任务队列获取任务
+        while (task != null || (task = getTask()) != null) {
+                      ...
+                    ...
+                try {
+                    //执行任务
+                    task.run();
+                } catch (RuntimeException x) {
+                              ...
+                            ...
+                } finally {
+                    //执行正常完成,系统空实现
+                    afterExecute(task, thrown);
+                }
+        }finally {
+            //调用processWorkerExit方法进行回收
+            processWorkerExit(w, completedAbruptly);
+           }
+
+}
+</code></pre><p><strong>getTask()</strong>方法是ThreadPoolExecutor提供给其内部类Worker的的方法。作用就是一个，从任务队列中取任务，源源不断地输出任务。</p>
+<pre><code>   private Runnable getTask() {
+    boolean timedOut = false; // Did the last poll() time out?
+       ...
+    for (;;) {
+       ...
+
+        try {
+            Runnable r = timed ?
+                workQueue.poll(keepAliveTime, TimeUnit.NANOSECONDS) :
+                 //从任务队列的头部取任务
+                workQueue.take();
+            if (r != null)
+                return r;
+            timedOut = true;
+        } catch (InterruptedException retry) {
+            timedOut = false;
+        }
+    }
+}
+</code></pre><p> 如果发生了以下四件事中的任意一件，那么Worker需要被回收：</p>
+<ol>
+<li><p>Worker个数比线程池最大大小要大</p>
+</li>
+<li><p>线程池处于STOP状态</p>
+</li>
+<li><p>线程池处于SHUTDOWN状态并且阻塞队列为空</p>
+</li>
+<li><p>使用超时时间从阻塞队列里拿数据，并且超时之后没有拿到数据(allowCoreThreadTimeOut || workerCount &gt; corePoolSize)</p>
+</li>
+</ol>
+<p>如果getTask返回的是null，那说明阻塞队列已经没有任务了，那么会调用processWorkerExit方法进行回收：</p>
+<pre><code>   private void processWorkerExit(Worker w, boolean completedAbruptly) {
+    if (completedAbruptly) // If abrupt, then workerCount wasn&apos;t adjusted
+        decrementWorkerCount();
+
+    final ReentrantLock mainLock = this.mainLock;
+    mainLock.lock();
+    try {
+        completedTaskCount += w.completedTasks;
+        // 集合移除掉需要回收的Worker
+        workers.remove(w);
+    } finally {
+        mainLock.unlock();
+    }
+
+    // 尝试结束线程池
+    tryTerminate();
+
+    int c = ctl.get();
+    if (runStateLessThan(c, STOP)) {
+        //如果Worker不是异常而死亡结束流程
+        if (!completedAbruptly) {
+            int min = allowCoreThreadTimeOut ? 0 : corePoolSize;
+            if (min == 0 &amp;&amp; ! workQueue.isEmpty())
+                min = 1;
+            if (workerCountOf(c) &gt;= min)
+                return; // replacement not needed
+        }
+        //异常结束,新开启一个Worker
+        //开启条件:由于用户任务异常退出; Worker任务少于corePoolSize或者工作正在运行;阻塞队列不为空，但没有workers。
+        addWorker(null, false);
+    }
+}
+</code></pre>
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/04/07/日常问题总结/" rel="next" title="日常问题总结">
+                <i class="fa fa-chevron-left"></i> 日常问题总结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/27/Android 性能优化/" rel="prev" title="Android 性能优化">
+                Android 性能优化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Lipy" />
+          <p class="site-author-name" itemprop="name">Lipy</p>
+           
+              <p class="site-description motion-element" itemprop="description">start from zero</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#执行过程"><span class="nav-number">2.</span> <span class="nav-text">执行过程</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#分析"><span class="nav-number">2.0.1.</span> <span class="nav-text">分析</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Lipy</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

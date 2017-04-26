@@ -1,0 +1,673 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="Handler Android 异步消息处理机制 ,Handle机制其实也为我们提供了异步消息处理机制代码的参考。  由于Android系统规定主线程不能被阻塞，所以耗时操作必须放在子线程中进行。但是子线程中又不能访问UI。 Handler解决了在子线程中无法访问UI的矛盾。 使用 1234567891011public void	onClick(View v)&amp;#123;		new Thread">
+<meta name="keywords">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Handler">
+<meta property="og:url" content="http://lipy.tech/2017/04/26/Handler/index.html">
+<meta property="og:site_name" content="Lipy's Notes">
+<meta property="og:description" content="Handler Android 异步消息处理机制 ,Handle机制其实也为我们提供了异步消息处理机制代码的参考。  由于Android系统规定主线程不能被阻塞，所以耗时操作必须放在子线程中进行。但是子线程中又不能访问UI。 Handler解决了在子线程中无法访问UI的矛盾。 使用 1234567891011public void	onClick(View v)&amp;#123;		new Thread">
+<meta property="og:updated_time" content="2017-04-26T09:37:55.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Handler">
+<meta name="twitter:description" content="Handler Android 异步消息处理机制 ,Handle机制其实也为我们提供了异步消息处理机制代码的参考。  由于Android系统规定主线程不能被阻塞，所以耗时操作必须放在子线程中进行。但是子线程中又不能访问UI。 Handler解决了在子线程中无法访问UI的矛盾。 使用 1234567891011public void	onClick(View v)&amp;#123;		new Thread">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://lipy.tech/2017/04/26/Handler/"/>
+
+
+
+
+
+  <title> Handler | Lipy's Notes </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Lipy's Notes</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">弃我去者，昨日之日不可留 <br> 乱我心者，今日之日多烦忧</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://lipy.tech/2017/04/26/Handler/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Lipy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Lipy's Notes">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Handler
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-04-26T14:30:55+08:00">
+                2017-04-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Handler"><a href="#Handler" class="headerlink" title="Handler"></a>Handler</h2><blockquote>
+<p>Android 异步消息处理机制 ,Handle机制其实也为我们提供了异步消息处理机制代码的参考。</p>
+</blockquote>
+<p>由于Android系统规定主线程不能被阻塞，所以耗时操作必须放在子线程中进行。但是子线程中又不能访问UI。</p>
+<p>Handler解决了在子线程中无法访问UI的矛盾。</p>
+<p>使用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">public void	onClick(View v)&#123;</div><div class="line">		new Thread(new Runnable() &#123;</div><div class="line">        	@Override</div><div class="line">        	public void run() &#123;</div><div class="line">            	//拿到Message对象</div><div class="line">            	Message msg = Message.obtain();</div><div class="line">            	msg.arg1 = 1;</div><div class="line">            	mHandler.sendMessage(msg);</div><div class="line">        	&#125;</div><div class="line">    	&#125;) .start();</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">  private Handler mHandler =  new Handler()&#123;</div><div class="line">    @Override</div><div class="line">    public void handleMessage(Message msg) &#123;</div><div class="line">        super.handleMessage(msg);</div><div class="line">        //更新ui</div><div class="line">        TextView.setText(&quot;msg = &quot; + msg.arg1);</div><div class="line">    &#125;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<a id="more"></a>
+<p>实现消息驱动有几个要素：</p>
+<ul>
+<li>消息的表示：Message</li>
+<li>消息队列：MessageQueue</li>
+<li>消息循环，用于循环取出消息进行处理：Looper</li>
+<li>消息处理，消息循环从消息队列中取出消息后要对消息进行处理：Handler</li>
+</ul>
+<h4 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h4><p>使用Handler之前，我们都是通过new Handler()初始化一个实例，同时会获取Looper和messageQueue的实例。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">public Handler(Callback callback, boolean async) &#123;</div><div class="line">       if (FIND_POTENTIAL_LEAKS) &#123;</div><div class="line">           final Class&lt;? extends Handler&gt; klass = getClass();</div><div class="line">           if ((klass.isAnonymousClass() || klass.isMemberClass() || klass.isLocalClass()) &amp;&amp;</div><div class="line">                   (klass.getModifiers() &amp; Modifier.STATIC) == 0) &#123;</div><div class="line">               Log.w(TAG, &quot;The following Handler class should be static or leaks might occur: &quot; +</div><div class="line">                   klass.getCanonicalName());</div><div class="line">           &#125;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">	//默认将关联当前线程的looper</div><div class="line">       mLooper = Looper.myLooper();</div><div class="line">       if (mLooper == null) &#123;</div><div class="line">           throw new RuntimeException(</div><div class="line">               &quot;Can&apos;t create handler inside thread that has not called Looper.prepare()&quot;);</div><div class="line">       &#125;</div><div class="line">       //直接把关联looper的MQ作为自己的MQ，因此它的消息将发送到关联looper的MQ上</div><div class="line">       mQueue = mLooper.mQueue;</div><div class="line">       mCallback = callback;</div><div class="line">       mAsynchronous = async;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+<p>Handler的send或者post类方法被调用时，最终会调用MessageQueue的enqueueMessage方法，将消息放入消息队列中。（post(Runnable r)中的Runnable对象会被封装成message对象）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">//发送消息</div><div class="line">public final boolean sendMessage(Message msg)&#123;</div><div class="line">	return sendMessageDelayed(msg, 0);</div><div class="line">&#125;</div><div class="line"></div><div class="line">//发送消息</div><div class="line">public final boolean sendMessageDelayed(Message msg, long delayMillis)&#123;</div><div class="line">	if (delayMillis &lt; 0) &#123;</div><div class="line">		delayMillis = 0;</div><div class="line">	&#125;</div><div class="line">	return sendMessageAtTime(msg, SystemClock.uptimeMillis() + delayMillis);</div><div class="line">&#125;</div><div class="line"></div><div class="line">//最终都是调用sendMessageAtTime()方法</div><div class="line">public boolean sendMessageAtTime(Message msg, long uptimeMillis) &#123;</div><div class="line">	MessageQueue queue = mQueue;</div><div class="line">		if (queue == null) &#123;</div><div class="line">			RuntimeException e = new RuntimeException(</div><div class="line">			this + &quot; sendMessageAtTime() called with no mQueue&quot;);</div><div class="line">			Log.w(&quot;Looper&quot;, e.getMessage(), e);</div><div class="line">			return false;</div><div class="line">		&#125;</div><div class="line">	return enqueueMessage(queue, msg, uptimeMillis);</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line">private boolean enqueueMessage(MessageQueue queue, Message msg, long uptimeMillis) &#123;</div><div class="line">	msg.target = this;//meg.target赋值为this</div><div class="line">	if (mAsynchronous) &#123;</div><div class="line">		msg.setAsynchronous(true);</div><div class="line">	&#125;</div><div class="line">	//调用enqueueMessage()将Message送到MessageQueue中去，该MessageQueue的实例是looper在初始化的时候创建的</div><div class="line">	return queue.enqueueMessage(msg, uptimeMillis);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>当Looper发现有新消息来时，就会处理这个消息（Android 在进程的入口函数 ActivityThread.main()方法中，会调用 Looper.prepareMainLooper(), 为应用的主线程创建Looper，然后调用Looper.loop()就启动了进程的消息循环。所以我们在activity中创建的Handler默认是运行在ui线程中的，可以直接更新ui。我们也可以在自线程中去调用Looper.prepare()方法去创建该线程的Looper）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div></pre></td><td class="code"><pre><div class="line">//</div><div class="line">public static final void prepare() &#123;  </div><div class="line">		//一个线程中只有一个Looper实例</div><div class="line">        if (sThreadLocal.get() != null) &#123;  </div><div class="line">            throw new RuntimeException(&quot;Only one Looper may be created per thread&quot;);  </div><div class="line">        &#125;  </div><div class="line">        sThreadLocal.set(new Looper(true));  </div><div class="line">&#125;</div><div class="line"></div><div class="line">//轮询处理调用handler.</div><div class="line">public static void loop() &#123;</div><div class="line">        final Looper me = myLooper();//获取ThreadLocal中存储的Looper实例</div><div class="line">        //需要先调用prepare()创建Looper实例</div><div class="line">        if (me == null) &#123;</div><div class="line">            throw new RuntimeException(&quot;No Looper; Looper.prepare() wasn&apos;t called on this thread.&quot;);</div><div class="line">        &#125;</div><div class="line">        final MessageQueue queue = me.mQueue;//获取该looper实例中的mQueue</div><div class="line"></div><div class="line">        // Make sure the identity of this thread is that of the local process,</div><div class="line">        // and keep track of what that identity token actually is.</div><div class="line">        Binder.clearCallingIdentity();</div><div class="line">        final long ident = Binder.clearCallingIdentity();</div><div class="line"></div><div class="line">		//无限循环</div><div class="line">        for (;;) &#123;</div><div class="line">            Message msg = queue.next(); // might block</div><div class="line">            //取出一条消息，如果没有消息则阻塞</div><div class="line">            if (msg == null) &#123;</div><div class="line">                // No message indicates that the message queue is quitting.</div><div class="line">                return;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            // This must be in a local variable, in case a UI event sets the logger</div><div class="line">            Printer logging = me.mLogging;</div><div class="line">            if (logging != null) &#123;</div><div class="line">                logging.println(&quot;&gt;&gt;&gt;&gt;&gt; Dispatching to &quot; + msg.target + &quot; &quot; +</div><div class="line">                        msg.callback + &quot;: &quot; + msg.what);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">			//把消息交给msg.target的dispatchMessage方法去处理</div><div class="line">			//msg.target 是handler中enqueueMessage()方法中msg.target = this赋值的handler实例</div><div class="line">            msg.target.dispatchMessage(msg);</div><div class="line"></div><div class="line">            if (logging != null) &#123;</div><div class="line">                logging.println(&quot;&lt;&lt;&lt;&lt;&lt; Finished to &quot; + msg.target + &quot; &quot; + msg.callback);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            // Make sure that during the course of dispatching the</div><div class="line">            // identity of the thread wasn&apos;t corrupted.</div><div class="line">            final long newIdent = Binder.clearCallingIdentity();</div><div class="line">            if (ident != newIdent) &#123;</div><div class="line">                Log.wtf(TAG, &quot;Thread identity changed from 0x&quot;</div><div class="line">                        + Long.toHexString(ident) + &quot; to 0x&quot;</div><div class="line">                        + Long.toHexString(newIdent) + &quot; while dispatching to &quot;</div><div class="line">                        + msg.target.getClass().getName() + &quot; &quot;</div><div class="line">                        + msg.callback + &quot; what=&quot; + msg.what);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">			//释放资源</div><div class="line">            msg.recycleUnchecked();</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>looper轮询处理消息调用dispatchMessage()方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">// 处理消息，该方法由looper调用</div><div class="line">public void dispatchMessage(Message msg) &#123;</div><div class="line">		// 如果message设置了callback，即runnable消息，处理callback！</div><div class="line">       if (msg.callback != null) &#123;</div><div class="line">           handleCallback(msg);</div><div class="line">       &#125; else &#123;</div><div class="line">       	// 如果handler本身设置了callback，则执行callback</div><div class="line">           if (mCallback != null) &#123;</div><div class="line">               if (mCallback.handleMessage(msg)) &#123;</div><div class="line">                   return;</div><div class="line">               &#125;</div><div class="line">           &#125;</div><div class="line">           //调用handleMessage()方法，内部是空实现，交给用户复写，处理消息。</div><div class="line">           handleMessage(msg);</div><div class="line">       &#125;</div><div class="line">   &#125;</div><div class="line">   </div><div class="line">   </div><div class="line">    // 处理runnable消息</div><div class="line">   private final void handleCallback(Message message) &#123;</div><div class="line">       message.callback.run();  //直接调用run方法</div><div class="line">   &#125;</div><div class="line">   // 由用户复写</div><div class="line">   public void handleMessage(Message msg) &#123;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+<p><strong>Message</strong><br>在整个消息处理机制中，message封装了任务携带的信息和处理该任务的handler。</p>
+<ol>
+<li>尽管Message有public的默认构造方法，但是推荐通过Message.obtain()来从消息池中获得空消息对象，以节省资源。</li>
+<li>如果你的message只储存int信息，优先使用Message.arg1和Message.arg2来传递信息，这比用Bundle更省内存</li>
+<li>擅用message.what来标识信息，以便用不同方式处理message。</li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/04/07/日常问题总结/" rel="prev" title="日常问题总结">
+                日常问题总结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Lipy" />
+          <p class="site-author-name" itemprop="name">Lipy</p>
+           
+              <p class="site-description motion-element" itemprop="description">start from zero</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Handler"><span class="nav-number">1.</span> <span class="nav-text">Handler</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#源码分析"><span class="nav-number">1.0.1.</span> <span class="nav-text">源码分析</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Lipy</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

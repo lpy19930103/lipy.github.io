@@ -1,0 +1,792 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="概念：  进程： 每个进程都有独立的代码和数据空间（进程上下文），进程间的切换会有较大的开销，一个进程包含1–n个线程。 线程： 进程中负责程序执行的执行单元。一个进程中至少有一个线程。 多线程：解决多任务同时执行的需求，合理使用CPU资源。多线程的运行是根据CPU切换完成，如何切换由CPU决定，因此多线程运行具有不确定性。 线程池：基本思想还是一种对象池的思想，开辟一块内存空间，里面存放了众多(">
+<meta name="keywords">
+<meta property="og:type" content="article">
+<meta property="og:title" content="线程、多线程与线程池">
+<meta property="og:url" content="http://lipy.tech/2017/03/02/java多线程/index.html">
+<meta property="og:site_name" content="Lipy's Notes">
+<meta property="og:description" content="概念：  进程： 每个进程都有独立的代码和数据空间（进程上下文），进程间的切换会有较大的开销，一个进程包含1–n个线程。 线程： 进程中负责程序执行的执行单元。一个进程中至少有一个线程。 多线程：解决多任务同时执行的需求，合理使用CPU资源。多线程的运行是根据CPU切换完成，如何切换由CPU决定，因此多线程运行具有不确定性。 线程池：基本思想还是一种对象池的思想，开辟一块内存空间，里面存放了众多(">
+<meta property="og:updated_time" content="2017-03-03T02:16:46.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="线程、多线程与线程池">
+<meta name="twitter:description" content="概念：  进程： 每个进程都有独立的代码和数据空间（进程上下文），进程间的切换会有较大的开销，一个进程包含1–n个线程。 线程： 进程中负责程序执行的执行单元。一个进程中至少有一个线程。 多线程：解决多任务同时执行的需求，合理使用CPU资源。多线程的运行是根据CPU切换完成，如何切换由CPU决定，因此多线程运行具有不确定性。 线程池：基本思想还是一种对象池的思想，开辟一块内存空间，里面存放了众多(">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://lipy.tech/2017/03/02/java多线程/"/>
+
+
+
+
+
+  <title> 线程、多线程与线程池 | Lipy's Notes </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Lipy's Notes</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">弃我去者，昨日之日不可留 <br> 乱我心者，今日之日多烦忧</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://lipy.tech/2017/03/02/java多线程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Lipy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Lipy's Notes">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                线程、多线程与线程池
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-02T16:31:02+08:00">
+                2017-03-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>概念：</strong></p>
+<ul>
+<li>进程： 每个进程都有独立的代码和数据空间（进程上下文），进程间的切换会有较大的开销，一个进程包含1–n个线程。</li>
+<li>线程： 进程中负责程序执行的执行单元。一个进程中至少有一个线程。</li>
+<li>多线程：解决多任务同时执行的需求，合理使用CPU资源。多线程的运行是根据CPU切换完成，如何切换由CPU决定，因此多线程运行具有不确定性。</li>
+<li>线程池：基本思想还是一种对象池的思想，开辟一块内存空间，里面存放了众多(未死亡)的线程，池中线程执行调度由池管理器来处理。当有线程任务时，从池中取一个，执行完成后线程对象归池，这样可以避免反复创建线程对象所带来的性能开销，节省了系统的资源。</li>
+</ul>
+<a id="more"></a>
+<p><strong>创建线程的两种方式</strong></p>
+<ol>
+<li>继承Thread类，覆盖run()方法。创建线程对象并用start()方法启动线程。</li>
+<li>实现Runnable接口</li>
+</ol>
+<p><strong>Thread 类中的 start() 和 run() 方法的区别</strong></p>
+<blockquote>
+<p>调用 start() 方法才会启动新线程；如果直接调用 Thread 的 run() 方法，它的行为就会和普通的方法一样；为了在新的线程中执行我们的代码，必须使用 Thread.start() 方法。</p>
+</blockquote>
+<p><strong>用 Runnable 还是 Thread</strong></p>
+<blockquote>
+<p>我们都知道可以通过继承 Thread 类或者调用 Runnable 接口来实现线程，问题是，创建线程哪种方式更好呢？什么情况下使用它？这个问题很容易回答，如果你知道Java不支持类的多重继承，但允许你调用多个接口。所以如果你要继承其他类，当然是调用Runnable接口更好了</p>
+</blockquote>
+<p>Android 系统接口 HandlerThread 继承了 Thread，它是一个可以使用 Handler 的 Thread，一个具有消息循环的线程。run()方法中通过 Looper.prepare() 来创建消息队列，通过 Looper.loop() 来开启消息循环。可以在 run() 方法中执行耗时的任务，而 HandlerThread 内部创建了消息队列外界需要通过 Handler 的方式来通知 HandlerThread 执行一个具体任务；HandlerThread 的 run() 方法是一个无限的循环，可以通过它的 quite() 或 quitSafely() 方法来终止线程的执行；</p>
+<p><strong>创建线程的第三种方式</strong></p>
+<p>Callable 是在 JDK1.5 增加的（Runnable在JDK1.0）。 与Runnable的主要区别是 Callable 的 call() 方法可以返回值和抛出异常，而 Runnable 的 run() 方法没有这些功能。Callable 可以返回装载有计算结果的 Future 对象。</p>
+<blockquote>
+<p> 源码</p>
+</blockquote>
+<pre><code>public interface Runnable {
+  public void run();
+}
+
+public interface Callable&lt;V&gt; {
+  V call() throws Exception;
+}
+</code></pre><p>Callable无法在新线程中new Thread(Runnable r)使用，Thread 类只支持 Runnable。不过 Callable 可以使用 ExecutorService 。</p>
+<p><strong>Future</strong></p>
+<p>该接口定义5个方法</p>
+<ol>
+<li><p>boolean cancel(boolean mayInterruptIfRunning)：试图取消对此任务的执行。如果任务已完成、或已取消，或者由于某些其他原因而无法取消，则此尝试将失败。当调用 cancel() 时，如果调用成功，而此任务尚未启动，则此任务将永不运行。如果任务已经启动，则 mayInterruptIfRunning 参数确定是否应该以试图停止任务的方式来中断执行此任务的线程。此方法返回后，对 isDone() 的后续调用将始终返回 true。如果此方法返回 true，则对 isCancelled() 的后续调用将始终返回 true。</p>
+</li>
+<li><p>boolean isCancelled()：如果在任务正常完成前将其取消，则返回 true。</p>
+</li>
+<li><p>boolean isDone()：如果任务已完成，则返回 true。 可能由于正常终止、异常或取消而完成，在所有这些情况中，此方法都将返回 true。</p>
+</li>
+<li><p>V get()throws InterruptedException,ExecutionException：如有必要，等待计算完成，然后获取其结果。</p>
+</li>
+<li><p>V get(long timeout,TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException： 如有必要，最多等待为使计算完成所给定的时间之后，获取其结果（如果结果可用）</p>
+</li>
+</ol>
+<p><strong>FutureTask</strong></p>
+<p>   FutureTask实现了两个接口，Runnable和Future，所以它既可以作为Runnable被线程执行，又可以作为Future得到Callable的返回值。<br>    public class FutureTask<v> implements RunnableFuture<v> {<br>        …<br>    }</v></v></p>
+<pre><code>public interface RunnableFuture&lt;V&gt; extends Runnable, Future&lt;V&gt; {
+    void run();
+}
+</code></pre><p>示例</p>
+<pre><code>Callable&lt;String&gt; callable = new Callable&lt;String&gt;() {
+    @Override
+    public String call() throws Exception {
+        return &quot;哈哈哈&quot;;
+    }
+};
+
+FutureTask&lt;String&gt; task = new FutureTask&lt;String&gt;(callable);
+
+Thread t = new Thread(task);
+t.start(); // 启动线程
+task.cancel(true); // 取消线程
+</code></pre><p><strong>多线程</strong></p>
+<p>使用多线程得好处：</p>
+<p>优点：</p>
+<p>1）适当的提高程序的执行效率（多个线程同时执行）。</p>
+<p>2）适当的提高了资源利用率（CPU、内存等）。</p>
+<p>缺点：</p>
+<p>1）占用一定的内存空间。</p>
+<p>2）线程越多CPU的调度开销越大。</p>
+<p>3）程序的复杂度会上升。</p>
+<blockquote>
+<p>要点</p>
+</blockquote>
+<p><strong>synchronized</strong></p>
+<p>synchronized是Java中的关键字，是一种同步锁。它修饰的对象有以下几种： </p>
+<ol>
+<li><p>修饰一个代码块，被修饰的代码块称为同步语句块，其作用的范围是大括号{}括起来的代码，作用的对象是调用这个代码块的对象； </p>
+</li>
+<li><p>修饰一个方法，被修饰的方法称为同步方法，其作用的范围是整个方法，作用的对象是调用这个方法的对象； </p>
+</li>
+<li><p>修改一个静态的方法，其作用的范围是整个静态方法，作用的对象是这个类的所有对象； </p>
+</li>
+<li><p>修改一个类，其作用的范围是synchronized后面括号括起来的部分，作用主的对象是这个类的所有对象。</p>
+</li>
+</ol>
+<p><strong>wait()、notify()、notifyAll()</strong></p>
+<p>wait()：<br>导致线程进入等待状态，直到它被其他线程通过notify()或者notifyAll唤醒，该方法只能在同步方法中调用。</p>
+<p>notify()：<br>随机选择一个在该对象上调用wait方法的线程，解除其阻塞状态，该方法只能在同步方法或同步块内部调用。</p>
+<p>notifyAll()：<br>解除所有那些在该对象上调用wait方法的线程的阻塞状态，同样该方法只能在同步方法或同步块内部调用。</p>
+<p>调用这三个方法中任意一个，当前线程必须是锁的持有者，如果不是会抛出一个 IllegalMonitorStateException 异常。</p>
+<p><strong>wait() 与 Thread.sleep(long time) 的区别</strong></p>
+<p>sleep()：在指定的毫秒数内让当前正在执行的线程休眠（暂停执行）。</p>
+<p>wait() 方法使实体所处线程暂停执行，从而使对象进入等待状态，直到被 notify() 方法通知或者 wait() 的等待的时间到。</p>
+<p>sleep() 方法使持有的线程暂停运行，从而使线程进入休眠状态，直到用 interrupt 方法来打断他的休眠或者 sleep 的休眠的时间到。</p>
+<p>wait() 方法进入等待状态时会释放同步锁，而 sleep() 方法不会释放同步锁。</p>
+<p><strong>join()</strong></p>
+<p>thread.Join把指定的线程加入到当前线程，可以将两个交替执行的线程合并为顺序执行的线程。比如在线程B中调用了线程A的Join()方法，直到线程A执行完毕后，才会继续执行线程B。</p>
+<p>t.join();      //使调用线程 t 在此之前执行完毕。<br>t.join(1000);  //等待 t 线程，等待时间是1000毫秒</p>
+<p>伪代码</p>
+<pre><code>Thread t1 = new Thread(线程一);  
+Thread t2 = new Thread(线程二);  
+t1.start();  
+t1.join(); // 等待线程一执行完成，再执行线程二
+t2.start();
+</code></pre><p>启动 t1 后，调用了 join() 方法，直到 t1 的任务结束，才轮到 t2 启动，然后 t2 才开始任务，两个线程是按着严格的顺序来执行的。</p>
+<p><strong>Thread.yield() </strong></p>
+<p>Thread.yield()：线程放弃运行，将CPU的控制权让出。</p>
+<p>yield() 方法让出控制权后，如果优先级高于其他的线程，还有可能马上被系统的调度机制选中来运行。</p>
+<p><strong>线程池</strong></p>
+<p>优点：</p>
+<p>1）避免线程的创建和销毁带来的性能开销。</p>
+<p>2）避免大量的线程间因互相抢占系统资源导致的阻塞现象。</p>
+<p>3｝能够对线程进行简单的管理并提供定时执行、间隔执行等功能。</p>
+<p>Java里面线程池的顶级接口是 Executor，不过真正的线程池接口是 ExecutorService， ExecutorService 的默认实现是 ThreadPoolExecutor；<br>普通类 Executors 里面调用的就是 ThreadPoolExecutor。</p>
+<p><strong>Executors提供四种线程池</strong></p>
+<ol>
+<li><p>newCachedThreadPool  可变尺寸的线程池，但是在以前构造的线程可用时将重用它们。对于执行很多短期异步任务的程序而言，这些线程池通常可提高程序性能。调用 execute() 将重用以前构造的线程（如果线程可用）。如果现有线程没有可用的，则创建一个新线程并添加到池中。终止并从缓存中移除那些已有 60 秒钟未被使用的线程。因此，长时间保持空闲的线程池不会使用任何资源。注意，可以使用 ThreadPoolExecutor 构造方法创建具有类似属性但细节不同（例如超时参数）的线程池。</p>
+</li>
+<li><p>newSingleThreadExecutor 创建是一个单线程池，也就是该线程池只有一个线程在工作，所有的任务是串行执行的，如果这个唯一的线程因为异常结束，那么会有一个新的线程来替代它，此线程池保证所有任务的执行顺序按照任务的提交顺序执行。</p>
+</li>
+<li><p>newFixedThreadPool 固定大小的线程池，每次提交一个任务就创建一个线程，直到线程达到线程池的最大大小，线程池的大小一旦达到最大值就会保持不变，如果某个线程因为执行异常而结束，那么线程池会补充一个新线程。</p>
+</li>
+<li><p>newScheduledThreadPool 创建一个大小无限的线程池，此线程池支持定时以及周期性执行任务的需求。</p>
+</li>
+</ol>
+<p><strong>ThreadPoolExecutor</strong>是Executors类的底层实现。</p>
+<pre><code>public ThreadPoolExecutor(int corePoolSize,
+                      int maximumPoolSize,
+                      long keepAliveTime,
+                      TimeUnit unit,
+                      BlockingQueue&lt;Runnable&gt; workQueue,
+                      ThreadFactory threadFactory) {
+    this(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, 
+        threadFactory, defaultHandler);
+</code></pre><p>}</p>
+<p>1）corePoolSize：线程池的核心线程数，一般情况下不管有没有任务都会一直在线程池中一直存活，只有在 ThreadPoolExecutor 中的方法 allowCoreThreadTimeOut(boolean value) 设置为 true 时，闲置的核心线程会存在超时机制，如果在指定时间没有新任务来时，核心线程也会被终止，而这个时间间隔由第3个属性 keepAliveTime 指定。</p>
+<p>2）maximumPoolSize：线程池所能容纳的最大线程数，当活动的线程数达到这个值后，后续的新任务将会被阻塞。</p>
+<p>3）keepAliveTime：控制线程闲置时的超时时长，超过则终止该线程。一般情况下用于非核心线程，只有在 ThreadPoolExecutor 中的方法 allowCoreThreadTimeOut(boolean value) 设置为 true时，也作用于核心线程。</p>
+<p>4）unit：用于指定 keepAliveTime 参数的时间单位，TimeUnit 是个 enum 枚举类型，常用的有：TimeUnit.HOURS(小时)、TimeUnit.MINUTES(分钟)、TimeUnit.SECONDS(秒) 和 TimeUnit.MILLISECONDS(毫秒)等。</p>
+<p>5）workQueue：线程池的任务队列，通过线程池的 execute(Runnable command) 方法会将任务 Runnable 存储在队列中。</p>
+<p>6）threadFactory：线程工厂，它是一个接口，用来为线程池创建新线程的。</p>
+<p><strong>线程池 submit 和 execute</strong></p>
+<ol>
+<li><p>接收的参数不一样</p>
+</li>
+<li><p>submit有返回值，而execute没有</p>
+</li>
+</ol>
+<blockquote>
+<p><t> Future<t> submit(Callable<t> task);</t></t></t></p>
+<p>Future&lt;?&gt; submit(Runnable task);</p>
+<p>void execute(Runnable command);</p>
+</blockquote>
+<p>实现：submit内部调用execute，有返回值，抛出异常。</p>
+<pre><code> public Future&lt;?&gt; submit(Runnable task) {
+    if (task == null) throw new NullPointerException();
+    RunnableFuture&lt;Void&gt; ftask = newTaskFor(task, null);
+    execute(ftask);
+    return ftask;
+}
+</code></pre><p><strong>线程池的关闭</strong></p>
+<p>ThreadPoolExecutor 提供了两个方法，用于线程池的关闭。</p>
+<p>shutdown()：不会立即的终止线程池，而是要等所有任务缓存队列中的任务都执行完后才终止，但再也不会接受新的任务。</p>
+<p>shutdownNow()：立即终止线程池，并尝试打断正在执行的任务，并且清空任务缓存队列，返回尚未执行的任务。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/06/android studio问题/" rel="next" title="Android Studio问题记录">
+                <i class="fa fa-chevron-left"></i> Android Studio问题记录
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/02/新文章/" rel="prev" title="Hello World">
+                Hello World <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Lipy" />
+          <p class="site-author-name" itemprop="name">Lipy</p>
+           
+              <p class="site-description motion-element" itemprop="description">start from zero</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Lipy</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

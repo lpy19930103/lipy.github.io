@@ -1,0 +1,700 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="Future 模式只是生产者-消费者模型的扩展。经典“生产者-消费者”模型中消息的生产者不关心消费者何时处理完该条消息，也不关心处理结果。Future模式则可以让消息的生产者等待直到消息处理结束，如果需要的话还可以取得处理结果。 简单来讲，Future是这样一种模式: 它本身表示‘将来(future)’，你提交一个异步的任务，比如提交到一个threadpool，与此同时拿到一个Future对象，任">
+<meta name="keywords">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Future">
+<meta property="og:url" content="http://lipy.tech/2017/03/22/Future简析/index.html">
+<meta property="og:site_name" content="Lipy's Notes">
+<meta property="og:description" content="Future 模式只是生产者-消费者模型的扩展。经典“生产者-消费者”模型中消息的生产者不关心消费者何时处理完该条消息，也不关心处理结果。Future模式则可以让消息的生产者等待直到消息处理结束，如果需要的话还可以取得处理结果。 简单来讲，Future是这样一种模式: 它本身表示‘将来(future)’，你提交一个异步的任务，比如提交到一个threadpool，与此同时拿到一个Future对象，任">
+<meta property="og:updated_time" content="2017-03-23T02:20:44.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Future">
+<meta name="twitter:description" content="Future 模式只是生产者-消费者模型的扩展。经典“生产者-消费者”模型中消息的生产者不关心消费者何时处理完该条消息，也不关心处理结果。Future模式则可以让消息的生产者等待直到消息处理结束，如果需要的话还可以取得处理结果。 简单来讲，Future是这样一种模式: 它本身表示‘将来(future)’，你提交一个异步的任务，比如提交到一个threadpool，与此同时拿到一个Future对象，任">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://lipy.tech/2017/03/22/Future简析/"/>
+
+
+
+
+
+  <title> Future | Lipy's Notes </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Lipy's Notes</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">弃我去者，昨日之日不可留 <br> 乱我心者，今日之日多烦忧</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://lipy.tech/2017/03/22/Future简析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Lipy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Lipy's Notes">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Future
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-22T16:11:42+08:00">
+                2017-03-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>Future</strong> 模式只是生产者-消费者模型的扩展。经典“生产者-消费者”模型中消息的生产者不关心消费者何时处理完该条消息，也不关心处理结果。Future模式则可以让消息的生产者等待直到消息处理结束，如果需要的话还可以取得处理结果。</p>
+<p>简单来讲，Future是这样一种模式: 它本身表示‘将来(future)’，你提交一个异步的任务，比如提交到一个threadpool，与此同时拿到一个Future对象，任务的执行是异步的，这时候你可以去做其它的事情，等到异步任务结束的时候，你可通过前面的Future对象拿到异步执行的任务的结果。</p>
+<p>一个简单的例子来直观感受一下Future：</p>
+<pre><code>public class AddTask implements Callable&lt;Integer&gt; {
+
+    private int a, b;
+
+    public AddTask(int a, int b) {
+        this.a = a;
+        this.b = b;
+    }
+
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future&lt;Integer&gt; future = executor.submit(new AddTask(1, 2));
+        // 假设现在做其他事情
+        Thread.sleep(5000);
+        // 只有当future的状态是已完成时(future.isDone = true),get方法才会返回
+        if (future.isDone()) {
+            System.out.print(future.get());
+        }
+    }
+
+    @Override
+    public Integer call() throws Exception {
+        return a + b;
+    }
+}
+</code></pre><p>Future要获取异步任务执行的结果，需要通过轮询或者阻塞等待的方式，这样的方式，总显得不太‘完美’，比较好的做法，应该是异步执行结束后，去通知用户异步任务结束了，你可以通过Future来获取执行结果了。</p>
+<a id="more"></a>
+<p><strong>ListenableFuture</strong></p>
+<p>Google Guava 包定义了 ListenableFuture接口并继承了JDK concurrent包下的Future 接口。它可以允许你注册回调方法(callbacks)，在运算（多线程执行）完成的时候进行调用,  或者在运算（多线程执行）完成后立即执行。</p>
+<p>创建</p>
+<p>对应JDK中的 ExecutorService.submit(Callable) 提交多线程异步运算的方式，Guava 提供了ListeningExecutorService 接口, 该接口返回 ListenableFuture。</p>
+<p>将 ExecutorService 转为 ListeningExecutorService，可以使用MoreExecutors.listeningDecorator(ExecutorService)进行装饰。</p>
+<pre><code>ListeningExecutorService executor = MoreExecutors.listeningDecorator(
+           Executors.newFixedThreadPool(1));
+
+   final ListenableFuture&lt; String&gt; future = executor.submit(
+           new Callable&lt; String&gt;() {
+               public String call() throws Exception {
+                   return &quot;Hello ListenableFuture&quot;;
+               }
+           });
+</code></pre><p>方法</p>
+<p>ListenableFuture 中的基础方法是addListener(Runnable, Executor), 该方法会在多线程运算完的时候，指定的Runnable参数传入的对象会被指定的Executor执行。</p>
+<pre><code> future.addListener(new Runnable() {
+      public void run() {
+        try {
+          System.out.println(future.get());
+        } catch (InterruptedException e) {
+          future.cancel(true);
+        } catch (ExecutionException e) {
+          future.cancel(true);
+        }
+      }
+}, Executors.newFixedThreadPool(1));
+</code></pre><p>使用addListener时，用户需要在注册的回调函数中处理InterruptedException和ExecutionException, 显得略为麻烦。这里Guava还提供了另为一种使用方式:</p>
+<p>添加回调（Callbacks）</p>
+<pre><code> 显式的提供了用户线程池，用来执行回调函数。
+
+ Futures.addCallback(future, new FutureCallback&lt; String&gt;() {
+      public void onSuccess(String result) {
+        System.out.println(result);
+      }
+
+      public void onFailure(Throwable t) {
+        System.out.println(&quot;onFailure: &quot; + t);
+      }
+
+    }, Executors.newFixedThreadPool(1));
+
+也可以使用默认方式，默认是采用 MoreExecutors.sameThreadExecutor()线程池
+
+Futures.addCallback(ListenableFuture&lt;V&gt; future,FutureCallback&lt;? super V&gt; callback)
+</code></pre><p>FutureCallback<v> 中实现了两个方法:</v></p>
+<p>onSuccess(V),在Future成功的时候执行，根据Future结果来判断。</p>
+<p>onFailure(Throwable), 在Future失败的时候执行，根据Future结果来判断。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/27/Android 性能优化/" rel="next" title="Android 性能优化">
+                <i class="fa fa-chevron-left"></i> Android 性能优化
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/09/线程池队列/" rel="prev" title="BlockingQueue简析">
+                BlockingQueue简析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Lipy" />
+          <p class="site-author-name" itemprop="name">Lipy</p>
+           
+              <p class="site-description motion-element" itemprop="description">start from zero</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Lipy</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>
