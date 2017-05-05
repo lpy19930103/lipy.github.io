@@ -87,17 +87,17 @@
 
 
 
-<meta name="description" content="代码修改 drawleft 图标大小Drawable drawable = getResources().getDrawable(int drawableId); drawable.setBounds(0, 0, width, height);(一定要先设置这个) radioButton.setCompoundDrawables(null, null, drawable, null);(要使用这个">
+<meta name="description" content="在androidstudio2.0版本编译使用ORM框架 ActiveAndroid 时 遇到以下错误1erro： &amp;apos;java.lang.String com.activeandroid.TableInfo.getTableName()&amp;apos; on a  null **object** reference. 解决办法 ：关掉Instant Run 代码修改 drawleft 图标大">
 <meta name="keywords">
 <meta property="og:type" content="article">
 <meta property="og:title" content="日常问题总结">
 <meta property="og:url" content="http://lipy.tech/2017/04/07/日常问题总结/index.html">
 <meta property="og:site_name" content="Lipy's Notes">
-<meta property="og:description" content="代码修改 drawleft 图标大小Drawable drawable = getResources().getDrawable(int drawableId); drawable.setBounds(0, 0, width, height);(一定要先设置这个) radioButton.setCompoundDrawables(null, null, drawable, null);(要使用这个">
-<meta property="og:updated_time" content="2017-04-07T09:33:48.000Z">
+<meta property="og:description" content="在androidstudio2.0版本编译使用ORM框架 ActiveAndroid 时 遇到以下错误1erro： &amp;apos;java.lang.String com.activeandroid.TableInfo.getTableName()&amp;apos; on a  null **object** reference. 解决办法 ：关掉Instant Run 代码修改 drawleft 图标大">
+<meta property="og:updated_time" content="2017-05-05T02:21:02.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="日常问题总结">
-<meta name="twitter:description" content="代码修改 drawleft 图标大小Drawable drawable = getResources().getDrawable(int drawableId); drawable.setBounds(0, 0, width, height);(一定要先设置这个) radioButton.setCompoundDrawables(null, null, drawable, null);(要使用这个">
+<meta name="twitter:description" content="在androidstudio2.0版本编译使用ORM框架 ActiveAndroid 时 遇到以下错误1erro： &amp;apos;java.lang.String com.activeandroid.TableInfo.getTableName()&amp;apos; on a  null **object** reference. 解决办法 ：关掉Instant Run 代码修改 drawleft 图标大">
 
 
 
@@ -322,7 +322,9 @@
       
 
       
-        <h3 id="代码修改-drawleft-图标大小"><a href="#代码修改-drawleft-图标大小" class="headerlink" title="代码修改 drawleft 图标大小"></a>代码修改 drawleft 图标大小</h3><pre><code>Drawable drawable = getResources().getDrawable(int drawableId);
+        <h3 id="在androidstudio2-0版本编译使用ORM框架-ActiveAndroid-时-遇到以下错误"><a href="#在androidstudio2-0版本编译使用ORM框架-ActiveAndroid-时-遇到以下错误" class="headerlink" title="在androidstudio2.0版本编译使用ORM框架 ActiveAndroid 时 遇到以下错误"></a>在androidstudio2.0版本编译使用ORM框架 ActiveAndroid 时 遇到以下错误</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">erro： &apos;java.lang.String com.activeandroid.TableInfo.getTableName()&apos; on a  null **object** reference.</div></pre></td></tr></table></figure>
+<p>解决办法 ：<br>关掉Instant Run</p>
+<h3 id="代码修改-drawleft-图标大小"><a href="#代码修改-drawleft-图标大小" class="headerlink" title="代码修改 drawleft 图标大小"></a>代码修改 drawleft 图标大小</h3><pre><code>Drawable drawable = getResources().getDrawable(int drawableId);
 drawable.setBounds(0, 0, width, height);(一定要先设置这个)
 radioButton.setCompoundDrawables(null, null, drawable, null);(要使用这个方法设置图片才能生效)
 </code></pre><h3 id="控制EditText不让输入中文-输入内容类型"><a href="#控制EditText不让输入中文-输入内容类型" class="headerlink" title="控制EditText不让输入中文(输入内容类型)"></a>控制EditText不让输入中文(输入内容类型)</h3><p>自定义EditText重写onCreateInputConnection()方法<br>在该方法内返回自定义的MyInputConnecttion</p>
@@ -532,7 +534,7 @@ public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#代码修改-drawleft-图标大小"><span class="nav-number">1.</span> <span class="nav-text">代码修改 drawleft 图标大小</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#控制EditText不让输入中文-输入内容类型"><span class="nav-number">2.</span> <span class="nav-text">控制EditText不让输入中文(输入内容类型)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#让popuwindow的父类上的控件处理Touch事件-不让自处理"><span class="nav-number">3.</span> <span class="nav-text">让popuwindow的父类上的控件处理Touch事件,不让自处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#android7-0-popuwindow显示位置错误-全屏置顶"><span class="nav-number">4.</span> <span class="nav-text">android7.0 popuwindow显示位置错误(全屏置顶)</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#在androidstudio2-0版本编译使用ORM框架-ActiveAndroid-时-遇到以下错误"><span class="nav-number">1.</span> <span class="nav-text">在androidstudio2.0版本编译使用ORM框架 ActiveAndroid 时 遇到以下错误</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码修改-drawleft-图标大小"><span class="nav-number">2.</span> <span class="nav-text">代码修改 drawleft 图标大小</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#控制EditText不让输入中文-输入内容类型"><span class="nav-number">3.</span> <span class="nav-text">控制EditText不让输入中文(输入内容类型)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#让popuwindow的父类上的控件处理Touch事件-不让自处理"><span class="nav-number">4.</span> <span class="nav-text">让popuwindow的父类上的控件处理Touch事件,不让自处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#android7-0-popuwindow显示位置错误-全屏置顶"><span class="nav-number">5.</span> <span class="nav-text">android7.0 popuwindow显示位置错误(全屏置顶)</span></a></li></ol></div>
             
 
           </div>
