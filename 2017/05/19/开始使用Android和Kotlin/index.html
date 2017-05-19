@@ -87,17 +87,28 @@
 
 
 
-<meta name="description" content="在GRADLE 进行DEX的可能会遇到内存不够用的情况，错误信息大概是java.lang.OutOfMemoryError: GC overhead limit exceeded。  Error:java.lang.OutOfMemoryError: GC overhead limit exceeded Error:Execution failed for task ‘:runtime-start">
+<meta name="description" content="本文原文地址 http://kotlinlang.org/docs/tutorials/kotlin-android.html，翻译后方便阅读，如有不正确的地方请联系 lipengyuan1993@gmail.com  本教程将引导我们使用 Android Studio 为 Android 创建一个简单的 Kotlin 应用程序。 安装Kotlin插件 Android Studio3.0 版本会">
 <meta name="keywords">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Android Studio问题记录">
-<meta property="og:url" content="http://lipy.tech/2017/03/06/android studio问题/index.html">
+<meta property="og:title" content="开始使用Android和Kotlin">
+<meta property="og:url" content="http://lipy.tech/2017/05/19/开始使用Android和Kotlin/index.html">
 <meta property="og:site_name" content="Lipy's Notes">
-<meta property="og:description" content="在GRADLE 进行DEX的可能会遇到内存不够用的情况，错误信息大概是java.lang.OutOfMemoryError: GC overhead limit exceeded。  Error:java.lang.OutOfMemoryError: GC overhead limit exceeded Error:Execution failed for task ‘:runtime-start">
-<meta property="og:updated_time" content="2017-03-09T02:08:34.000Z">
+<meta property="og:description" content="本文原文地址 http://kotlinlang.org/docs/tutorials/kotlin-android.html，翻译后方便阅读，如有不正确的地方请联系 lipengyuan1993@gmail.com  本教程将引导我们使用 Android Studio 为 Android 创建一个简单的 Kotlin 应用程序。 安装Kotlin插件 Android Studio3.0 版本会">
+<meta property="og:image" content="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin2.png">
+<meta property="og:image" content="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin2.png">
+<meta property="og:image" content="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin3.png">
+<meta property="og:image" content="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin4.png">
+<meta property="og:image" content="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin5.png">
+<meta property="og:image" content="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin6.png">
+<meta property="og:image" content="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin9.png">
+<meta property="og:image" content="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin8.png">
+<meta property="og:image" content="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin9.png">
+<meta property="og:image" content="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin10.png">
+<meta property="og:updated_time" content="2017-05-19T08:26:31.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Android Studio问题记录">
-<meta name="twitter:description" content="在GRADLE 进行DEX的可能会遇到内存不够用的情况，错误信息大概是java.lang.OutOfMemoryError: GC overhead limit exceeded。  Error:java.lang.OutOfMemoryError: GC overhead limit exceeded Error:Execution failed for task ‘:runtime-start">
+<meta name="twitter:title" content="开始使用Android和Kotlin">
+<meta name="twitter:description" content="本文原文地址 http://kotlinlang.org/docs/tutorials/kotlin-android.html，翻译后方便阅读，如有不正确的地方请联系 lipengyuan1993@gmail.com  本教程将引导我们使用 Android Studio 为 Android 创建一个简单的 Kotlin 应用程序。 安装Kotlin插件 Android Studio3.0 版本会">
+<meta name="twitter:image" content="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin2.png">
 
 
 
@@ -125,13 +136,13 @@
 
 
 
-  <link rel="canonical" href="http://lipy.tech/2017/03/06/android studio问题/"/>
+  <link rel="canonical" href="http://lipy.tech/2017/05/19/开始使用Android和Kotlin/"/>
 
 
 
 
 
-  <title> Android Studio问题记录 | Lipy's Notes </title>
+  <title> 开始使用Android和Kotlin | Lipy's Notes </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -250,7 +261,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://lipy.tech/2017/03/06/android studio问题/">
+    <link itemprop="mainEntityOfPage" href="http://lipy.tech/2017/05/19/开始使用Android和Kotlin/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Lipy">
@@ -271,7 +282,7 @@
             
             
               
-                Android Studio问题记录
+                开始使用Android和Kotlin
               
             
           </h1>
@@ -286,8 +297,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-06T11:06:02+08:00">
-                2017-03-06
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-19T16:25:02+08:00">
+                2017-05-19
               </time>
             
 
@@ -322,93 +333,35 @@
       
 
       
-        <p><strong>在GRADLE 进行DEX的可能会遇到内存不够用的情况，</strong>错误信息大概是java.lang.OutOfMemoryError: GC overhead limit exceeded。</p>
-<blockquote>
-<p>Error:java.lang.OutOfMemoryError: GC overhead limit exceeded</p>
-<p>Error:Execution failed for task ‘:runtime-starter:transformClassesWithDexFor105Debug’.<br> com.android.build.api.transform.TransformException: com.android.ide.common.process.ProcessException: java.util.concurrent.ExecutionException: com.android.ide.common.process.ProcessException: org.gradle.process.internal.ExecException: Process ‘command ‘C:\Program Files\Java\jdk1.8.0_121\bin\java.exe’’ finished with non-zero exit value 3</p>
+        <blockquote>
+<p>本文原文地址 <a href="http://kotlinlang.org/docs/tutorials/kotlin-android.html" target="_blank" rel="external">http://kotlinlang.org/docs/tutorials/kotlin-android.html</a>，翻译后方便阅读，如有不正确的地方请联系 lipengyuan1993@gmail.com</p>
 </blockquote>
-<p>这个时候只需要配置dexOptions的javaMaxHeapSize大小</p>
-<pre><code>dexOptions {
-    javaMaxHeapSize &quot;4g&quot;
-}
-</code></pre><a id="more"></a>
-<p><strong>切换JAVA 1.7到1.8版本遇到得问题，错误信息如下：</strong></p>
-<blockquote>
-<p>Error:Error converting bytecode to dex:<br>Cause: java.lang.RuntimeException: Exception parsing classes</p>
-<p>Error:Execution failed for task ‘:runtime-starter:transformClassesWithDexFor105Debug’.<br>com.android.build.api.transform.TransformException: java.lang.RuntimeException: com.android.ide.common.process.ProcessException: java.util.concurrent.ExecutionException: com.android.ide.common.process.ProcessException: org.gradle.process.internal.ExecException: Process ‘command ‘C:\Program Files\Java\jdk1.8.0_121\bin\java.exe’’ finished with non-zero exit value 1</p>
-</blockquote>
-<p>解决方法：在Java Libary工程中</p>
-<pre><code>apply plugin: &apos;java&apos;
-
-jar {
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
-
-    sourceSets {
-        main {
-            java.srcDirs = [&apos;src&apos;]
-            resources.srcDirs = [&apos;src&apos;]
-        }
-
-    }
-</code></pre><p><strong>解决ANDROID dex file cannot exceed 64K问题</strong></p>
-<blockquote>
-<p>Error:The number of method references in a .dex file cannot exceed 64K.</p>
-<p>Learn how to resolve this issue at <a href="https://developer.android.com/tools/building/multidex.html" target="_blank" rel="external">https://developer.android.com/tools/building/multidex.html</a><br>Error:Execution failed for task ‘:runtime-starter:transformClassesWithDexFor105Debug’.<br>com.android.build.api.transform.TransformException: com.android.ide.common.process.ProcessException: java.util.concurrent.ExecutionException: com.android.ide.common.process.ProcessException: org.gradle.process.internal.ExecException: Process ‘command ‘C:\Program Files\Java\jdk1.8.0_121\bin\java.exe’’ finished with non-zero exit value 2</p>
-</blockquote>
-<p>官方解决方案：</p>
-<ol>
-<li>修改gradle脚本来产生多dex。</li>
-</ol>
-<pre><code>android {
-    compileSdkVersion 21
-    buildToolsVersion &quot;21.1.0&quot;
-
-defaultConfig {
-        ...
-    minSdkVersion 14
-    targetSdkVersion 21
-     ...
-
-// Enabling multidex support.
-       multiDexEnabled true
-    }
-...
-}
-
-
-dependencies {
-    compile &apos;com.android.support:multidex:1.0.0&apos;
-}
-</code></pre><ol>
-<li>修改manifest 使用MulitDexApplication。</li>
-</ol>
-<pre><code>&lt;manifest xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
-package=&quot;com.example.android.multidex.myapplication&quot;&gt;
-    &lt;application
-        ...
-        android:name=&quot;android.support.multidex.MultiDexApplication&quot;&gt;
-        ...
-    &lt;/application&gt;
-&lt;/manifest&gt;
-</code></pre><p>如果有自己的Application，继承MulitDexApplication。如果当前代码已经继承自其它Application没办法修改那也行，就重写 Application的attachBaseContext()这个方法。 </p>
-<pre><code>@Override
-protected void attachBaseContext(Context base) {
-    super.attachBaseContext(base);
-    MultiDex.install(this);     
-}
-</code></pre><p><strong>更改ANDROID STUDIO版本，错误信息如下</strong></p>
-<blockquote>
-<p>Error:Cause: com/android/build/gradle/internal/model/DefaultAndroidProject : Unsupported major.minor version 52.0</p>
-</blockquote>
-<p>解决方法：<br>修改build.gradle中得com.android.tools.build:gradle:2.0.0版本改为as对应版本即可</p>
-<pre><code>buildscript {
-
-    dependencies {
-        classpath &apos;com.android.tools.build:gradle:2.0.0&apos;
-
-}
-</code></pre><p>}</p>
+<p>本教程将引导我们使用 Android Studio 为 Android 创建一个简单的 Kotlin 应用程序。</p>
+<p><strong>安装Kotlin插件</strong></p>
+<p>Android Studio3.0 版本会集成 Kotlin 插件。 如果您使用的是较早版本，则需要安装 Kotlin 插件。 转到 <em>File| Settings| Plugins | Install JetBrains plugin…</em> 然后搜索并安装 Kotlin。 如果您正在查看 “<em>Welcome to Android Studio</em>”，请选择 <em>Configure | Plugins | Install JetBrains plugin…</em> 完成后，您需要重新启动IDE。</p>
+<a id="more"></a>
+<p><strong>创建一个项目</strong></p>
+<p>开始使用 Kotlin 进行 Android 开发是非常容易的。 在本教程中，我们将使用 Android Studio 进行升级。 如果使用 Intellij IDEA 开发 Android，这个过程几乎是一样的。</p>
+<p>首先让我们创建一个新的项目。 选择 <strong>Start a new Android Studio project</strong> 或者 <strong>File | New projec</strong>。 以下对话框将引导您完成新项目创建过程。 您需要为项目命名，并选择您安装的Android SDK版本。 大多数选项可以保留其默认值，因此您可以按 “Enter” 几次。</p>
+<p>命名项目：<br><img src="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin2.png" alt=""></p>
+<p>Android Studio 3.0 提供了一个选项，可以在此屏幕上启用 Kotlin 。 您可以检查此选项，并跳过下面的 “<em>Configuring Kotlin in the project</em>”。</p>
+<p>选择 Android 版本：<br><img src="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin2.png" alt=""></p>
+<p>选择创建将为您生成的 Activity：<br><img src="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin3.png" alt=""></p>
+<p>命名 Activity：<br><img src="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin4.png" alt=""></p>
+<p>在 Android Studio 3.0中，您可以选择立即在 Kotlin 中创建 Activity，因此您可以跳过 “Converting Java code to Kotlin” 步骤。 早期版本将在 Java 中创建一个 Activity，您可以使用自动化转换器工具进行转换。</p>
+<p>一般来说，开始使用 Kotlin 的最简单方法是将 Java activity 自动转换为 Kotlin。 请注意，任何时候都不要通过查看文档寻找一种新的方式来表达旧模式，您可以使用 Java 编写它，然后将 Java 代码复制粘贴到 Kotlin 文件中，IntelliJ IDEA（或Android Studio）将提示将其转换。</p>
+<p><strong>将 Java 代码转换为 Kotlin</strong></p>
+<p>打开 MainActivity.java 文件。 然后调用 Action <strong>Convert Java File to Kotlin File</strong>。 你可以通过几种方法来实现。 最简单的一个是调用 <a href="https://www.jetbrains.com/help/idea/navigating-to-action.html" target="_blank" rel="external">Find Action</a> 并开始输入一个动作名称（如下面的截图）。 或者，您可以通过调用 <em>Code | Convert Java File to Kotlin File</em> 的菜单项或使用相应的快捷键（您可以在菜单项中找到它）。<br><img src="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin5.png" alt=""></p>
+<p>转换后，您可以获得一个使用 Kotlin 编写的 Activity。<br><img src="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin6.png" alt=""></p>
+<p><strong>在项目中配置 Kotlin</strong></p>
+<p>如果您开始编辑此文件，Android Studio 会向您显示 Kotlin 未配置的提示，因此你需要进行配置。<br><img src="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin9.png" alt=""></p>
+<p>然后系统提示您输入 Kotlin 版本。 从安装版本列表中选择最新版本。<br><img src="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin8.png" alt=""></p>
+<p>配置 Kotlin 后，应该更新应用程序的 build.gradle 文件。 现在你可以看到 <em>apply plugin: ‘kotlin-android’</em> ，并添加依赖项。</p>
+<p>（有关如何为您的项目设置 gradle 的详细信息，请点击<a href="http://kotlinlang.org/docs/reference/using-gradle.html" target="_blank" rel="external">Using Gradle</a>）<br><img src="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin9.png" alt=""></p>
+<p>最后一件事是同步项目。 您可以在提示中按 “Sync Now” 或使用 Action <strong>Sync Project with Gradle Files</strong>。<br><img src="http://ongeesmn7.bkt.clouddn.com/kotlin/kotlin10.png" alt=""></p>
+<p><strong>构建和发布使用 Kotlin 编写的 Android 应用程序</strong></p>
+<p>您现在可以构建应用程序并在仿真器或设备上运行它。 这与 Java 中的工作方式完全相同。 您可以发布应用程序，并以类似于使用 Java 编写的 Android 应用程序的方式进行签名。</p>
+<p>Kotlin 有一个相当小的运行时文件大小：库大约是 859KB（从1.1.2-2开始）。 这意味着 Kotlin对 .apk 文件大小增加了一点。</p>
 
       
     </div>
@@ -439,18 +392,14 @@ protected void attachBaseContext(Context base) {
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/03/09/线程池队列/" rel="next" title="BlockingQueue简析">
-                <i class="fa fa-chevron-left"></i> BlockingQueue简析
-              </a>
-            
           </div>
 
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2017/03/02/java多线程/" rel="prev" title="线程、多线程与线程池">
-                线程、多线程与线程池 <i class="fa fa-chevron-right"></i>
+              <a href="/2017/05/08/Gradle/" rel="prev" title="Gradle">
+                Gradle <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
